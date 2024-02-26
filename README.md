@@ -40,3 +40,6 @@ Password = secret
 Paypal Sandbox Test Account
 username = sb-bmoji26981142@personal.example.com
 password = F$36|_fa
+
+
+Please create new parking reservation, to manage payment and cancellation

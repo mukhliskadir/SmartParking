@@ -4,64 +4,55 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use App\Models\Reservation;
+use App\Models\User;
+use Carbon\Carbon;
 
 class ManageReservation extends Component
 {
-    public $name;
-    public $date;
-    public $time;
-    public $reservations;
-    public $loading = false;
-
-    public function cancelReservation($reservationId)
-    {
-        $reservation = Reservation::find($reservationId);
-
-        if ($reservation) {
-            $reservation->delete();
-            $this->loadReservations();
-        }
-    }
-
-    public function resetFilters()
-    {
-        $this->name = null;
-        $this->date = null;
-        $this->time = null;
-        $this->loadReservations();
-    }
-
-    public function loadReservations()
-    {
-        $this->loading = true;
-
-        $query = Reservation::with('user');
-
-        if ($this->name) {
-            $query->whereHas('user', function ($q) {
-                $q->where('name', 'like', '%' . $this->name . '%');
-            });
-        }
-
-        if ($this->date) {
-            $query->whereDate('reserved_at', $this->date);
-        }
-
-        if ($this->time) {
-            $query->whereTime('reserved_at', '<=', $this->time)
-                ->whereTime('reserved_until', '>=', $this->time);
-        }
-
-        $this->reservations = $query->get();
-        $this->loading = false;
-    }
+    public $search = '';
+    public $searchPlate = '';
+    public $reservationIds;
+    public $startDate;
+    public $endDate;
 
     public function render()
     {
-        if (!$this->reservations) {
-            $this->loadReservations();
+        $query = Reservation::with('user')->withTrashed()->latest();
+
+        if (!empty($this->search)) {
+            $query->whereHas('user', function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%');
+            });
+        }
+        if (!empty($this->searchPlate)) {
+            $query->where('car_plate', 'like', '%' . $this->searchPlate . '%');
         }
 
-        return view('livewire.manage-reservation');
+        if (!empty($this->startDate) && !empty($this->endDate)) {
+            $startDateTime = Carbon::parse($this->startDate)->startOfDay();
+            $endDateTime = Carbon::parse($this->endDate)->endOfDay();
+            $query->whereBetween('reserved_at', [$startDateTime, $endDateTime]);
+        }
+
+        $reservations = $query->get();
+
+        return view('livewire.manage-reservation', [
+            'reservations' => $reservations
+        ]);
     }
+    public function cancelReservation()
+    {
+        $reservationIds = request()->input('reservationIds');
+        dd($reservationIds);
+        $reservation = Reservation::findOrFail($reservationIds);
+        $reservation->update(['status' => 'cancelled']);
+        $reservation->delete();
+
+
+        $this->reservationIds = null;
+        return redirect()->route('manage-reservation')->with('success', 'Reservation cancelled.');
+        ;
+
+    }
+
 }

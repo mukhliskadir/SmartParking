@@ -98,6 +98,19 @@
                         <span class="nav-link-text ms-1">Parking Spot</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ Route::currentRouteName() == 'manage-reservation' ? 'active' : '' }}"
+                        href="{{ route('manage-reservation') }}">
+                        <div
+                            class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                            <i style="font-size: 1rem;"
+                                class="fas fa-lg fa-map ps-2 pe-2 text-center
+                        {{ in_array(request()->route()->getName(), ['manage-reservation']) ? 'text-white' : 'text-dark' }}"></i>
+                        </div>
+                        <span class="nav-link-text ms-1">Manage Reservation</span>
+                    </a>
+                </li>
+               
                
             @endrole
             @role('super_admin|guest')
