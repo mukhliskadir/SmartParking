@@ -33,7 +33,7 @@ User email -
 
 Superadmin  - admin@softui.com
 User        - guest@gmail.com
-admin       - admin4@gmail.com
+admin       - admin3@gmail.com
 
 Password = secret
 
