@@ -31,7 +31,7 @@
                             placeholder="Select end date">
                     </div>
                 </div>
-                
+
             </div>
 
 
@@ -54,12 +54,11 @@
                                 <td>{{ $reservation->car_plate }}</td>
                                 <td>{{ $reservation->reserved_at }}</td>
                                 <td>{{ $reservation->reserved_until }}</td>
-                                <td>{{ $reservation->status }} /  {{$reservation->payment_status }} </td>
+                                <td>{{ $reservation->status }} / {{ $reservation->payment_status }} </td>
                                 <td>
-                                    @if ($reservation->payment_status == 'pending' &&  $reservation->status=='reserved')
-                                        <a class="cancelReservation" id="cancelReservation" data-bs-toggle="modal"
-                                        data-bs-target="#cancelReservationModal"
-                                        data-id="{{ $reservation->id }}">
+                                    @if ($reservation->payment_status == 'pending' && $reservation->status == 'reserved')
+                                        <a id="cancelRequestButton" data-bs-toggle="modal"
+                                            data-bs-target="#cancelReservationModal" data-id="{{ $reservation->id }}">
                                             <i class="fas fa-user-edit text-secondary"> Cancel Reservation</i>
                                     @endif
                                     </a>
@@ -73,33 +72,41 @@
         </div>
     </div>
 </main>
-<div class="modal fade" id="cancelReservationModal" tabindex="-1" aria-labelledby="cancelReservationModal"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelReservationModal">Cancel Request Confirmation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to cancel this request?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <form wire:submit.prevent="cancelReservation">
-                        <input type="hidden" wire:model="reservationIds" name="reservationIds" id="reserve-id">
-                        <button type="submit" class="btn btn-danger">Yes, Cancel Request</button>
-                    </form>
-                    
-                </div>
+<div class="modal fade" id="cancelReservationModal" tabindex="-1" aria-labelledby="cancelReservationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelReservationModalLabel">Confirm Cancel Reservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to cancel this reservation?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" id="confirmCancel">Confirm Cancel</button>
             </div>
         </div>
     </div>
-    <script>
-        $(document).ready(function() {
-            $('.cancelReservation').click(function() {
-                var reservationIds = $(this).data('id');
-                $('#reserve-id').val(reservationIds);
-            });
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#cancelReservationModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget); 
+            var reservationId = button.data('id');
+
+            var modal = $(this);
+            modal.find('.modal-footer #confirmCancel').data('id', reservationId);
         });
-    </script>
+
+        $('#confirmCancel').on('click', function() {
+            var reservationId = $(this).data('id');
+
+            Livewire.emit('cancelReservation', reservationId);
+
+            $('#cancelReservationModal').modal('hide');
+        });
+    });
+</script>
+

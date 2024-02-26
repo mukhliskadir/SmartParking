@@ -11,10 +11,11 @@ class ManageReservation extends Component
 {
     public $search = '';
     public $searchPlate = '';
-    public $reservationIds;
+    public $reservationId;
     public $startDate;
     public $endDate;
 
+    protected $listeners = ['cancelReservation'];
     public function render()
     {
         $query = Reservation::with('user')->withTrashed()->latest();
@@ -40,19 +41,22 @@ class ManageReservation extends Component
             'reservations' => $reservations
         ]);
     }
-    public function cancelReservation()
+    public function cancelReservation($id)
     {
-        $reservationIds = request()->input('reservationIds');
-        dd($reservationIds);
-        $reservation = Reservation::findOrFail($reservationIds);
+        $this->reservationId = $id;
+
+
+
+        $reservation = Reservation::findOrFail($this->reservationId);
         $reservation->update(['status' => 'cancelled']);
+
         $reservation->delete();
 
+        session()->flash('success', 'Reservation cancelled successfully.');
 
-        $this->reservationIds = null;
+        $this->reservationId = null;
         return redirect()->route('manage-reservation')->with('success', 'Reservation cancelled.');
         ;
-
     }
 
 }
